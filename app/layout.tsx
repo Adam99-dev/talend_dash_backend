@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -30,17 +31,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header className="border-b border-border-light bg-bg-surface sticky top-0 z-40">
-          <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <header className="border-b border-border-light bg-bg-surface sticky top-0 z-40 backdrop-blur">
+          <nav className="site-nav max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-8">
-              <a href="/" className="text-h3 font-bold text-text-deep hover:text-accent transition-colors">
+              <Link href="/" className="text-h3 font-bold text-text-deep hover:text-accent hover:scale-105 transition-colors">
                 TalentDash
-              </a>
+              </Link>
               <div className="hidden md:flex gap-6">
-                <a href="/salaries" className="text-body text-text-body hover:text-accent transition-colors">
+                <a href="/salaries" className="text-body text-text-body hover:text-accent transition-colors hover:scale-105">
                   Salaries
                 </a>
-                <a href="/compare" className="text-body text-text-body hover:text-accent transition-colors">
+                <a href="/compare" className="text-body text-text-body hover:text-accent transition-colors hover:scale-105">
                   Compare
                 </a>
               </div>

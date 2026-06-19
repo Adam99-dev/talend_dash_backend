@@ -55,6 +55,160 @@
 }
 
 @layer components {
+  .card,
+  .filter-panel,
+  .salary-table-shell { border-radius: 1.25rem; box-shadow: 0 10px 32px rgba(0, 0, 0, 0.045); }
+  .input-field { min-height: 48px; border-radius: 0.875rem; background-color: var(--color-bg-surface); }
+  .btn-primary,
+  .btn-secondary { border-radius: 0.875rem; }
+}
+
+/* Layout polish — existing palette intentionally unchanged. */
+@layer components {
+  .page-container {
+    width: 100%;
+  }
+
+  .page-heading {
+    max-width: 760px;
+    padding-top: 0.5rem;
+  }
+
+  .site-nav {
+    min-height: 68px;
+  }
+
+  .card,
+  .filter-panel,
+  .salary-table-shell {
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.045);
+  }
+
+  .feature-grid .card {
+    padding: 2rem;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .feature-grid .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.07);
+  }
+
+  .filter-panel {
+    padding: 1.5rem;
+  }
+
+  .input-field {
+    min-height: 48px;
+    border-radius: 0.875rem;
+    background-color: var(--color-bg-surface);
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    border-radius: 0.875rem;
+  }
+
+  .salary-table-shell {
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-surface);
+  }
+
+  .salary-table-shell table {
+    min-width: 1120px;
+  }
+
+  .salary-table-shell .table-header-cell:first-child,
+  .salary-table-shell .table-cell:first-child {
+    padding-left: 1.75rem;
+  }
+
+  .salary-table-shell .table-row:last-child {
+    border-bottom: 0;
+  }
+
+  .salary-table-shell .total-comp {
+    font-size: 1.2rem;
+    white-space: nowrap;
+  }
+
+  .pagination-bar {
+    margin-top: -1.5rem;
+    padding-top: 1.25rem;
+    border: 1px solid var(--color-border-light);
+    border-top: 0;
+    border-radius: 0 0 1.25rem 1.25rem;
+    background: var(--color-bg-surface);
+  }
+
+  .compare-controls {
+    padding: 1.5rem;
+  }
+
+  .currency-control {
+    max-width: 320px;
+  }
+
+  .compare-card {
+    min-width: 0;
+    padding: 1.75rem;
+  }
+
+  .compare-card .text-salary-lg,
+  .compare-card .text-salary-md {
+    overflow-wrap: anywhere;
+    line-height: 1.15;
+  }
+}
+
+@media (max-width: 767px) {
+  h1,
+  .text-h1 {
+    font-size: 2rem;
+  }
+
+  .page-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .site-nav {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .filter-panel,
+  .compare-controls,
+  .card {
+    border-radius: 1rem;
+    padding: 1.125rem;
+  }
+
+  .pagination-bar {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .pagination-bar > div:last-child {
+    width: 100%;
+    justify-content: center;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .compare-grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .delta-card {
+    order: 3;
+  }
+}
+
+@layer components {
   /* Primary button */
   .btn-primary {
     padding: 0.75rem 1.5rem;
@@ -253,6 +407,11 @@
   }
 }
 
-
-
+/* Final structural overrides; color tokens above remain the source of truth. */
+.card,
+.filter-panel,
+.salary-table-shell { border-radius: 1.25rem; box-shadow: 0 10px 32px rgba(0, 0, 0, 0.045); }
+.input-field { min-height: 48px; border-radius: 0.875rem; background-color: var(--color-bg-surface); }
+.btn-primary,
+.btn-secondary { border-radius: 0.875rem; }
 

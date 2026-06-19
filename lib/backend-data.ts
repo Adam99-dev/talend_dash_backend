@@ -27,6 +27,14 @@ type ApiSalary = {
 };
 
 function mapSalary(row: ApiSalary): SalaryView {
+  const finite = (value: string | number | null | undefined) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  const baseSalary = finite(row.base_salary);
+  const bonus = finite(row.bonus);
+  const stock = finite(row.stock);
+  const suppliedTotal = finite(row.total_compensation);
   return {
     id: row.id,
     company: row.company,
@@ -34,11 +42,11 @@ function mapSalary(row: ApiSalary): SalaryView {
     level: row.level,
     location: row.location,
     currency: row.currency,
-    experienceYears: row.experience_years,
-    baseSalary: Number(row.base_salary),
-    bonus: Number(row.bonus),
-    stock: Number(row.stock),
-    totalComp: Number(row.total_compensation),
+    experienceYears: finite(row.experience_years),
+    baseSalary,
+    bonus,
+    stock,
+    totalComp: suppliedTotal || baseSalary + bonus + stock,
   };
 }
 

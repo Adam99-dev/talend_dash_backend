@@ -6,6 +6,7 @@ export const CURRENCY_CONVERSION = {
 export type Currency = "INR" | "USD";
 
 export function formatCurrency(amount: number, currency: Currency): string {
+  amount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
   if (currency === "INR") {
     return formatINR(amount);
   }
@@ -50,6 +51,7 @@ export function convertCurrency(
   fromCurrency: Currency,
   toCurrency: Currency
 ): number {
+  amount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
   if (fromCurrency === toCurrency) return amount;
 
   if (fromCurrency === "INR" && toCurrency === "USD") {
@@ -64,5 +66,5 @@ export function convertCurrency(
 }
 
 export function getDashIfMissing(value: number | null | undefined): string {
-  return value === null || value === undefined || value === 0 ? "—" : "";
+  return value === null || value === undefined || value === 0 || !Number.isFinite(Number(value)) ? "—" : "";
 }

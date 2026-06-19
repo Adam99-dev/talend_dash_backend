@@ -1,11 +1,17 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/app/components/ui/Input";
 import { Select } from "@/app/components/ui/Select";
 import { Button } from "@/app/components/ui/Button";
 import { LevelBadge } from "@/app/components/ui/Badge";
-import { formatCurrency, convertCurrency, getDashIfMissing, type Currency } from "@/app/lib/currency";
+import {
+  formatCurrency,
+  convertCurrency,
+  getDashIfMissing,
+  type Currency,
+} from "@/app/lib/currency";
 
 interface SalaryRecord {
   id: string;
@@ -30,26 +36,75 @@ interface TableProps {
   }>;
 }
 
-export function SalaryTable({ initialData, columns }: TableProps) {
-  const [data, setData] = useState<SalaryRecord[]>(initialData);
+export function SalaryTable({ initialData, columns: _columns }: TableProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const data = initialData;
   const [filteredData, setFilteredData] = useState<SalaryRecord[]>(initialData);
-  const [displayCurrency, setDisplayCurrency] = useState<Currency>("INR");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortColumn, setSortColumn] = useState<string>("totalComp");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [displayCurrency, setDisplayCurrency] = useState<Currency>(
+    searchParams.get("currency") === "USD" ? "USD" : "INR",
+  );
+  const [currentPage, setCurrentPage] = useState(() =>
+    Math.max(1, Number(searchParams.get("page")) || 1),
+  );
+  const [sortColumn, setSortColumn] = useState<string>(
+    searchParams.get("sort") || "totalComp",
+  );
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
+    searchParams.get("dir") === "asc" ? "asc" : "desc",
+  );
 
   // Filters
-  const [companyFilter, setCompanyFilter] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
-  const [levelFilters, setLevelFilters] = useState<Set<string>>(new Set());
-  const [locationFilter, setLocationFilter] = useState("");
+  const [companyFilter, setCompanyFilter] = useState(
+    searchParams.get("company") || "",
+  );
+  const [roleFilter, setRoleFilter] = useState(searchParams.get("role") || "");
+  const [levelFilters, setLevelFilters] = useState<Set<string>>(
+    new Set(searchParams.getAll("level")),
+  );
+  const [locationFilter, setLocationFilter] = useState(
+    searchParams.get("location") || "",
+  );
 
   const itemsPerPage = 25;
 
   // Get unique values for dropdowns
   const uniqueRoles = Array.from(new Set(data.map((r) => r.role))).sort();
   const uniqueLevels = Array.from(new Set(data.map((r) => r.level))).sort();
-  const uniqueLocations = Array.from(new Set(data.map((r) => r.location))).sort();
+  const uniqueLocations = Array.from(
+    new Set(data.map((r) => r.location)),
+  ).sort();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const params = new URLSearchParams();
+      if (companyFilter) params.set("company", companyFilter);
+      if (roleFilter) params.set("role", roleFilter);
+      levelFilters.forEach((level) => params.append("level", level));
+      if (locationFilter) params.set("location", locationFilter);
+      if (displayCurrency !== "INR") params.set("currency", displayCurrency);
+      if (sortColumn !== "totalComp") params.set("sort", sortColumn);
+      if (sortDirection !== "desc") params.set("dir", sortDirection);
+      if (currentPage > 1) params.set("page", String(currentPage));
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [
+    companyFilter,
+    roleFilter,
+    levelFilters,
+    locationFilter,
+    displayCurrency,
+    sortColumn,
+    sortDirection,
+    currentPage,
+    pathname,
+    router,
+  ]);
 
   // Apply filters
   useEffect(() => {
@@ -57,7 +112,7 @@ export function SalaryTable({ initialData, columns }: TableProps) {
 
     if (companyFilter) {
       result = result.filter((r) =>
-        r.company.name.toLowerCase().includes(companyFilter.toLowerCase())
+        r.company.name.toLowerCase().includes(companyFilter.toLowerCase()),
       );
     }
 
@@ -74,7 +129,7 @@ export function SalaryTable({ initialData, columns }: TableProps) {
     }
 
     // Sort
-    result = result.sort((a, b) => {
+    result = [...result].sort((a, b) => {
       const aVal = a[sortColumn as keyof SalaryRecord];
       const bVal = b[sortColumn as keyof SalaryRecord];
 
@@ -82,11 +137,14 @@ export function SalaryTable({ initialData, columns }: TableProps) {
         return sortDirection === "desc" ? bVal - aVal : aVal - bVal;
       }
 
-      return 0;
+      const first =
+        sortColumn === "company" ? a.company.name : String(aVal ?? "");
+      const second =
+        sortColumn === "company" ? b.company.name : String(bVal ?? "");
+      return (sortDirection === "desc" ? -1 : 1) * first.localeCompare(second);
     });
 
     setFilteredData(result);
-    setCurrentPage(1);
   }, [
     data,
     companyFilter,
@@ -98,9 +156,12 @@ export function SalaryTable({ initialData, columns }: TableProps) {
   ]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const handleLevelToggle = (level: string) => {
@@ -111,6 +172,7 @@ export function SalaryTable({ initialData, columns }: TableProps) {
       newFilters.add(level);
     }
     setLevelFilters(newFilters);
+    setCurrentPage(1);
   };
 
   const handleSort = (column: string) => {
@@ -120,6 +182,7 @@ export function SalaryTable({ initialData, columns }: TableProps) {
       setSortColumn(column);
       setSortDirection("desc");
     }
+    setCurrentPage(1);
   };
 
   const handleClearFilters = () => {
@@ -127,32 +190,37 @@ export function SalaryTable({ initialData, columns }: TableProps) {
     setRoleFilter("");
     setLevelFilters(new Set());
     setLocationFilter("");
+    setCurrentPage(1);
   };
 
   const displayData = paginatedData.map((record) => ({
     ...record,
-    baseSalary:
-      record.currency === "INR"
-        ? record.baseSalary
-        : convertCurrency(record.baseSalary, "USD", displayCurrency === "INR" ? "INR" : "USD"),
-    bonus:
-      record.currency === "INR"
-        ? record.bonus
-        : convertCurrency(record.bonus, "USD", displayCurrency === "INR" ? "INR" : "USD"),
-    stock:
-      record.currency === "INR"
-        ? record.stock
-        : convertCurrency(record.stock, "USD", displayCurrency === "INR" ? "INR" : "USD"),
-    totalComp:
-      record.currency === "INR"
-        ? record.totalComp
-        : convertCurrency(record.totalComp, "USD", displayCurrency === "INR" ? "INR" : "USD"),
+    baseSalary: convertCurrency(
+      record.baseSalary,
+      record.currency === "USD" ? "USD" : "INR",
+      displayCurrency,
+    ),
+    bonus: convertCurrency(
+      record.bonus,
+      record.currency === "USD" ? "USD" : "INR",
+      displayCurrency,
+    ),
+    stock: convertCurrency(
+      record.stock,
+      record.currency === "USD" ? "USD" : "INR",
+      displayCurrency,
+    ),
+    totalComp: convertCurrency(
+      record.totalComp,
+      record.currency === "USD" ? "USD" : "INR",
+      displayCurrency,
+    ),
   }));
 
   return (
     <div className="space-y-6">
       {/* Filter Bar */}
-      <div className="bg-bg-surface border border-border-light rounded-lg p-6 space-y-4">
+      <div className="filter-panel bg-bg-surface border border-border-light p-6 space-y-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-h3">Filters</h3>
           {(companyFilter ||
@@ -173,14 +241,23 @@ export function SalaryTable({ initialData, columns }: TableProps) {
             label="Company"
             placeholder="Search company..."
             value={companyFilter}
-            onChange={(e) => setCompanyFilter(e.target.value)}
+            onChange={(e) => {
+              setCompanyFilter(e.target.value);
+              setCurrentPage(1);
+            }}
           />
 
           <Select
             label="Role"
-            options={[{ value: "", label: "All Roles" }, ...uniqueRoles.map((r) => ({ value: r, label: r }))]}
+            options={[
+              { value: "", label: "All Roles" },
+              ...uniqueRoles.map((r) => ({ value: r, label: r })),
+            ]}
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
+            onChange={(e) => {
+              setRoleFilter(e.target.value);
+              setCurrentPage(1);
+            }}
           />
 
           <Select
@@ -190,7 +267,10 @@ export function SalaryTable({ initialData, columns }: TableProps) {
               ...uniqueLocations.map((l) => ({ value: l, label: l })),
             ]}
             value={locationFilter}
-            onChange={(e) => setLocationFilter(e.target.value)}
+            onChange={(e) => {
+              setLocationFilter(e.target.value);
+              setCurrentPage(1);
+            }}
           />
 
           <div className="flex items-end">
@@ -200,7 +280,10 @@ export function SalaryTable({ initialData, columns }: TableProps) {
               </label>
               <select
                 value={displayCurrency}
-                onChange={(e) => setDisplayCurrency(e.target.value as Currency)}
+                onChange={(e) => {
+                  setDisplayCurrency(e.target.value as Currency);
+                  setCurrentPage(1);
+                }}
                 className="input-field w-full"
               >
                 <option value="INR">INR (₹)</option>
@@ -215,7 +298,10 @@ export function SalaryTable({ initialData, columns }: TableProps) {
           <p className="text-label font-medium text-text-deep mb-3">Level</p>
           <div className="flex flex-wrap gap-3">
             {uniqueLevels.map((level) => (
-              <label key={level} className="flex items-center gap-2 cursor-pointer">
+              <label
+                key={level}
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <input
                   type="checkbox"
                   checked={levelFilters.has(level)}
@@ -245,7 +331,7 @@ export function SalaryTable({ initialData, columns }: TableProps) {
       {/* Table */}
       {filteredData.length > 0 && (
         <>
-          <div className="table-container">
+          <div className="table-container salary-table-shell">
             <table className="w-full border-collapse">
               <thead className="table-header">
                 <tr>
@@ -316,7 +402,7 @@ export function SalaryTable({ initialData, columns }: TableProps) {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between p-4 border-t border-border-light">
+          <div className="pagination-bar flex items-center justify-between p-4 border-t border-border-light">
             <div className="text-text-muted text-meta">
               Showing {(currentPage - 1) * itemsPerPage + 1}–
               {Math.min(currentPage * itemsPerPage, filteredData.length)} of{" "}
@@ -352,7 +438,9 @@ export function SalaryTable({ initialData, columns }: TableProps) {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
                 disabled={currentPage === totalPages}
               >
                 Next

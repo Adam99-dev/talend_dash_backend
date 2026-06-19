@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
+    <div className="page-container max-w-7xl mx-auto px-6 py-16 md:py-24">
       <div className="text-center mb-12">
         <h1 className="text-h1 mb-4">Know Your Worth</h1>
         <p className="text-h3 text-text-muted mb-8">
@@ -19,7 +19,7 @@ export default function Home() {
         </Link>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 mt-16">
+      <div className="feature-grid grid md:grid-cols-3 gap-8 mt-16">
         <div className="card text-center">
           <h3 className="text-h3 mb-3">50K+ Records</h3>
           <p className="text-text-muted">

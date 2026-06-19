@@ -35,13 +35,13 @@ export default async function SalariesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="page-container max-w-7xl mx-auto px-6 py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="mb-8">
+      <div className="page-heading mb-8">
         <h1 className="text-h1 mb-2">Salary Data</h1>
         <p className="text-h3 text-text-muted">
           {salaries.length.toLocaleString()} real salary records from engineers worldwide.
