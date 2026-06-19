@@ -1,5 +1,3 @@
-// src/app/api/salaries/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { Currency, Level, Prisma } from "@prisma/client";
 
@@ -46,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     const sort = searchParams.get("sort") ?? "total_comp_desc";
 
-    let page = parsePositiveInt(searchParams.get("page"), 1);
+    const page = parsePositiveInt(searchParams.get("page"), 1);
 
     const limit = Math.min(
       MAX_LIMIT,
@@ -126,7 +124,7 @@ export async function GET(request: NextRequest) {
       where,
     });
 
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
     if (page > totalPages) {
       return NextResponse.json(
         {
@@ -190,7 +188,7 @@ export async function GET(request: NextRequest) {
           page,
           limit,
 
-          totalPages: Math.ceil(total / limit),
+          totalPages,
         },
       }),
       {
