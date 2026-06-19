@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import { SalaryTable } from "@/app/components/features/SalaryTable";
 import { getAllSalaries } from "@/lib/backend-data";
@@ -48,7 +49,15 @@ export default async function SalariesPage() {
         </p>
       </div>
 
-      <SalaryTable initialData={salaries} columns={[]} />
+      <Suspense
+        fallback={
+          <div className="card text-center py-12">
+            <p className="text-text-muted">Loading salary table...</p>
+          </div>
+        }
+      >
+        <SalaryTable initialData={salaries} columns={[]} />
+      </Suspense>
     </div>
   );
 }
